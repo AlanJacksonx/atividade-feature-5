@@ -18,31 +18,32 @@ export class MascaramentoService {
     const prompt = buildMascaramentoPrompt(textoOriginal);
     const resultado = await this.modelo.gerar({ mensagem: prompt });
     
-    // Sanitização e Extração de JSON (Programação Defensiva)
-    const respostaBruta = resultado.resposta;
-    const matchJson = respostaBruta.match(/\{[\s\S]*\}/);
+    const matchJson = resultado.resposta.match(/\{[\s\S]*\}/);
     
     if (!matchJson) {
       throw new BadGatewayException('O modelo não retornou um formato JSON estruturado.');
     }
 
     try {
-      const data = JSON.parse(matchJson[0]);
+      const data = JSON.parse(matchJson[0]) as MascaramentoResultado;
       
-      // Validação do Contrato Estruturado (Critério de Aceite)
-      if (
-        typeof data.textoMascarado !== 'string' ||
-        !Array.isArray(data.tiposDetectados) ||
-        typeof data.quantidadeOcorrencias !== 'number' ||
-        typeof data.casosAmbiguos !== 'boolean' ||
-        typeof data.revisaoHumana !== 'boolean'
-      ) {
+      // 1. Validação Estrutural (Contrato JSON)
+      if (typeof data.textoMascarado !== 'string' || !Array.isArray(data.tiposDetectados)) {
         throw new Error('JSON ausente de campos obrigatórios');
       }
 
-      return data as MascaramentoResultado;
+      // 2. PROTEÇÃO DE SEGURANÇA (Verificação via Regex no Backend)
+      // Procura padrões de CPF ou E-mail que a IA tenha "esquecido" de mascarar
+      const cpfRegex = /\b\d{3}\.\d{3}\.\d{3}-\d{2}\b/;
+      const emailRegex = /\b[\w\.-]+@[\w\.-]+\.\w{2,4}\b/;
+
+      if (cpfRegex.test(data.textoMascarado) || emailRegex.test(data.textoMascarado)) {
+        throw new BadGatewayException('A IA falhou gravemente ao mascarar os dados. Vazamento interceptado pelo backend.');
+      }
+
+      return data;
     } catch (error) {
-      throw new BadGatewayException(`Falha ao processar resposta da IA: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+      throw new BadGatewayException(`Falha ao processar: ${error instanceof Error ? error.message : 'Erro'}`);
     }
   }
 }

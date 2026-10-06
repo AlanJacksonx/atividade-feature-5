@@ -18,49 +18,45 @@ export class App {
   async enviar() {
     if (!this.mensagem.trim()) return;
 
-    this.resposta = '';
+    this.resposta = '🛡️ A analisar dados sensíveis...';
     this.status = 'streaming';
     this.abortController = new AbortController();
 
     try {
-      const res = await fetch('http://localhost:3000/ia/responder-stream', {
+      // Chamada para a nova rota da Feature 5
+      const res = await fetch('http://localhost:3000/mascaramento/processar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ mensagem: this.mensagem }),
+        body: JSON.stringify({ texto: this.mensagem }), // O DTO usa 'texto'
         signal: this.abortController.signal,
       });
 
-      if (!res.ok || !res.body) {
+      if (!res.ok) {
         throw new Error('Falha na comunicação com o backend');
       }
 
-      const reader = res.body.getReader();
-      const decoder = new TextDecoder();
-      let done = false;
+      // Lê a resposta estruturada em JSON
+      const data = await res.json();
+      
+      // Formata a exibição no chat
+      this.resposta = 
+`🔒 TEXTO PROTEGIDO:
+${data.textoMascarado}
 
-      while (!done) {
-        const { value, done: readerDone } = await reader.read();
-        done = readerDone;
-        
-        if (value) {
-          const chunk = decoder.decode(value, { stream: true });
-          const linhas = chunk.split('\n').filter((linha) => linha.trim() !== '');
-          
-          for (const linha of linhas) {
-            const data = JSON.parse(linha);
-            if (data.type === 'delta' && data.content) {
-              this.resposta += data.content;
-            }
-          }
-        }
-      }
+📊 RELATÓRIO DE SEGURANÇA:
+- Tipos detetados: ${data.tiposDetectados?.length > 0 ? data.tiposDetectados.join(', ') : 'Nenhum'}
+- Ocorrências: ${data.quantidadeOcorrencias}
+- Revisão Humana: ${data.revisaoHumana ? '⚠️ Sim (Dado Ambíguo)' : 'Não'}`;
+
       this.status = 'idle';
       this.mensagem = ''; // Limpa o input após o envio
     } catch (error: any) {
       if (error.name === 'AbortError') {
+        this.resposta = '⛔ Análise cancelada pelo utilizador.';
         this.status = 'idle';
       } else {
         console.error(error);
+        this.resposta = '❌ Erro ao processar o mascaramento. O backend rejeitou a resposta ou a IA falhou.';
         this.status = 'error';
       }
     } finally {
