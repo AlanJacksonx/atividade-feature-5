@@ -1,6 +1,6 @@
 Markdown
 
-# 🛡️ Feature 5: Módulo de Mascaramento de Dados (DLP) com IA Local
+#  Feature 5: Módulo de Mascaramento de Dados (DLP) com IA Local
 
 Este repositório contém a implementação da **Feature 5**, um sistema de prevenção de perda de dados (Data Loss Prevention - DLP) projetado para anonimizar informações sensíveis em chamados de suporte técnico, garantindo conformidade com a LGPD.
 
@@ -9,13 +9,13 @@ Este repositório contém a implementação da **Feature 5**, um sistema de prev
 
 ---
 
-## 🎯 O Projeto
+##  O Projeto
 
 O objetivo deste módulo é atuar como um *middleware* de segurança. Ele intercepta textos de chamados submetidos pelos utilizadores, localiza Dados Pessoais Identificáveis (PIIs) e substitui-os por tags estruturadas (ex: `[CPF]`, `[EMAIL]`), sem alterar o contexto semântico da frase.
 
 **Regra de Negócio Principal:** Em respeito ao Princípio da Responsabilidade Única, esta feature **não** interage, resume ou responde ao utilizador. A sua única função é limpar o dado e devolver um contrato JSON rigoroso para as próximas etapas do pipeline do sistema.
 
-## 🏗️ Arquitetura e Segurança (Escudo Duplo)
+##  Arquitetura e Segurança (Escudo Duplo)
 
 Como Modelos de Linguagem (LLMs) são probabilísticos e suscetíveis a ataques de *Prompt Injection*, implementámos uma arquitetura de **Programação Defensiva** em duas camadas:
 
@@ -25,14 +25,14 @@ Como Modelos de Linguagem (LLMs) são probabilísticos e suscetíveis a ataques 
 2. **Interceção Determinística (Regex no Backend):**
    O backend em **NestJS** não confia cegamente no modelo. Ao receber a resposta da IA, o servidor valida o JSON e aplica Expressões Regulares (Regex) para procurar vazamentos. Se a IA falhar e tentar devolver um CPF ou E-mail real, o NestJS aborta a requisição e lança uma exceção `502 Bad Gateway`, protegendo a aplicação.
 
-## 🚀 Tecnologias Utilizadas
+##  Tecnologias Utilizadas
 
 *   **Backend:** NestJS, TypeScript
 *   **Frontend:** Angular
 *   **Inteligência Artificial:** Ollama (Llama 3.2 3B Instruct) local
 *   **Testes:** Jest
 
-## ⚙️ Como Executar o Projeto
+##  Como Executar o Projeto
 
 1. **Subir os serviços (Backend, Frontend e Ollama):**
    ```bash
@@ -41,7 +41,7 @@ Como Modelos de Linguagem (LLMs) são probabilísticos e suscetíveis a ataques 
     Aceder à Interface:
     Abra o navegador em http://localhost:4200 e envie um texto com dados sensíveis (ex: O meu CPF é 111.222.333-44).
 
-🧪 Testes e Validação
+ Testes e Validação
 
 O sistema possui uma suíte de testes robusta que comprova a sua segurança sem a dependência do contentor da IA ligado:
 
