@@ -40,7 +40,7 @@ Como Modelos de Linguagem (LLMs) são probabilísticos e suscetíveis a ataques 
 
     Aceder à Interface:
     Abra o navegador em http://localhost:4200 e envie um texto com dados sensíveis (ex: O meu CPF é 111.222.333-44).
-
+   ```
  Testes e Validação
 
 O sistema possui uma suíte de testes robusta que comprova a sua segurança sem a dependência do contentor da IA ligado:
